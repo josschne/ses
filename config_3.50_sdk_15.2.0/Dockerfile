@@ -6,7 +6,7 @@ RUN apt-get update && \
 
 RUN Xvfb :1 -screen 0 1024x768x16 &
 
-RUN curl https://www.nordicsemi.com/eng/nordic/download_resource/58852/29/7290792/94917 -o nrftools.tar && \
+RUN curl -X POST -F "fileid=D7493B8E963A44AAAEC84ED9E8FE750E" https://www.nordicsemi.com/api/sitecore/Products/DownloadPlatform -o nrftools.tar && \
 	tar -xvf nrftools.tar && \
 	rm nrftools.tar
 ENV PATH="/mergehex:/nrfjprog:$PATH"
