@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 RUN apt-get update && \
-	apt-get install -y libx11-6 libfreetype6 libxrender1 libfontconfig1 libxext6 xvfb curl unzip python-pip git zip && \
+	apt-get install -y libx11-6 libfreetype6 libxrender1 libfontconfig1 libxext6 xvfb curl unzip python-pip git zip python3 clang-format && \
 	pip install nrfutil
 
 RUN Xvfb :1 -screen 0 1024x768x16 &
