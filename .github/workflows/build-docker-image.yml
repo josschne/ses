@@ -1,0 +1,91 @@
+name: Build Segger docker image
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      nrf_tools_url:
+        description: 'The URL to download NRF tools from'
+        required: false
+        default: "https://www.nordicsemi.com/-/media/Software-and-other-downloads/Desktop-software/nRF-command-line-tools/sw/Versions-10-x-x/10-15-4/nrf-command-line-tools-10.15.4_amd64.zip"
+        type: string
+
+      segger_url:
+        description: 'The URL to download Segger from'
+        required: false
+        default: "https://www.segger.com/downloads/embedded-studio/EmbeddedStudio_ARM_Linux_x64"
+        type: string
+
+      nrf_sdk_url:
+        description: 'The URL to download NRF SDK from'
+        required: false
+        default: "https://developer.nordicsemi.com/nRF5_SDK/nRF5_SDK_v15.x.x/nRF5_SDK_15.3.0_59ac345.zip"
+        type: string
+
+      nrf_mesh_sdk_url:
+        description: 'The URL to download NRF Mesh SDK from'
+        required: false
+        default: "https://www.nordicsemi.com/-/media/Software-and-other-downloads/SDKs/nRF5-SDK-for-Mesh/nrf5SDKforMeshv420src.zip"
+        type: string
+
+      base_image:
+        description: 'The base image to use for the build'
+        required: false
+        default: "debian:bullseye-slim"
+        type: string
+
+      push_container_flag:
+        description: 'Whatever to push the image'
+        required: true
+        type: boolean
+
+      ref:
+        description: 'Git ref to a branch/tag/hash'
+        required: true
+        type: string
+
+      image_tag:
+        description: 'The tag to give to the image'
+        required: true
+        type: string
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: "${{ github.event.inputs.ref }}"
+
+      - name: Set env variables
+        run: |
+          IMAGE_NAME=$(echo "${{ env.REGISTRY }}/${{ github.repository }}/jupyter-notebook:${{ github.event.inputs.image_tag }}")
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+
+      - name: Log into registry
+        if: github.event.inputs.push_container_flag == 'true'
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # github.repository as <account>/<repo>
+      - name: Build and push image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./generic_docker_file
+          push: ${{ github.event.inputs.push_container_flag == 'true'}}
+          tags: "${{ env.IMAGE_NAME }}"
+          build-args: |
+            BASE_IMAGE=${{ github.event.inputs.base_image }}
+            NRFTOOLS_URL=${{ github.event.inputs.nrf_tools_url }}
+            SEGGER_URL=${{ github.event.inputs.segger_url }}
+            NRF_SDK_URL=${{ github.event.inputs.nrf_sdk_url }}
+            NRF_MESH_SDK_URL=${{ github.event.inputs.nrf_mesh_sdk_url }}
