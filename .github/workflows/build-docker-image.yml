@@ -65,7 +65,7 @@ jobs:
 
       - name: Set env variables
         run: |
-          IMAGE_NAME=$(echo "${{ env.REGISTRY }}/${{ github.repository }}/jupyter-notebook:${{ github.event.inputs.image_tag }}")
+          IMAGE_NAME=$(echo "${{ env.REGISTRY }}/${{ github.repository }}/Segger_ARM_build:${{ github.event.inputs.image_tag }}")
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
 
       - name: Log into registry
